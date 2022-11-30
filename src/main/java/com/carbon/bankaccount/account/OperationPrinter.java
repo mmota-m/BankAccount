@@ -5,8 +5,14 @@ import java.util.List;
 
 public class OperationPrinter {
 
-    public void printOperations(List<Operation> operations, BigDecimal balance) {
+    private final OperationFormatter formatter;
 
+    public OperationPrinter(OperationFormatter formatter) {
+        this.formatter = formatter;
+    }
+    public void printOperations(List<Operation> operations, BigDecimal balance) {
+        String displayAccountInformation = formatter.formatAccountInformation(operations, balance);
+        System.out.print(displayAccountInformation);
     }
 
 }
