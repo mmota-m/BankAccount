@@ -85,16 +85,16 @@ public class AccountServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("create an operation when withdraw given an amount")
+    @DisplayName("return no error when withdraw given a correct amount and balance")
     @ValueSource(doubles =  {2, 445.001, 5.00})
-    void createOperationWhenWithdraw(Double amount){
+    void returnNoErrorWhenWithdraw(Double amount){
         initClock();
         BigDecimal bgAmount = BigDecimal.valueOf(amount);
 
         when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
         when(repository.create(any())).thenReturn(sampleOperation);
 
-        this.service.withdraw(bgAmount);
+        assertDoesNotThrow(() -> this.service.withdraw(bgAmount));
 
         InOrder order = inOrder(repository);
         order.verify(repository).getBalance();
@@ -102,6 +102,15 @@ public class AccountServiceTest {
                 new Operation(LocalDateTime.now(fixedClock), BigDecimal.ZERO.subtract(bgAmount),
                         bgBalance.subtract(bgAmount).setScale(2, RoundingMode.HALF_EVEN)));
         order.verifyNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("return ErrorAmountOperationException when withdraw given an amount of 0")
+    void returnErrorWhenWithdraw0(){
+        assertThrows(ErrorAmountOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(0));
+        });
+        verifyNoInteractions(repository);
     }
 
 

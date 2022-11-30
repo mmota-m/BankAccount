@@ -31,7 +31,10 @@ public class RepositoryBasedAccountService implements AccountService {
     }
 
     @Override
-    public void withdraw(BigDecimal amount) {
+    public void withdraw(BigDecimal amount) throws ErrorAmountOperationException {
+        if(!isAmountValid(amount)) {
+            throw new ErrorAmountOperationException();
+        }
         Optional<BigDecimal> balance = repository.getBalance();
         BigDecimal actualBalanceValue = balance.orElse(BigDecimal.ZERO);
         BigDecimal newBalance = actualBalanceValue.subtract(amount);
