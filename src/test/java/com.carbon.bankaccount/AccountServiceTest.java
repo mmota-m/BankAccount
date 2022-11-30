@@ -127,6 +127,17 @@ public class AccountServiceTest {
         verifyNoMoreInteractions(repository);
     }
 
+    @ParameterizedTest
+    @DisplayName("return NotEnoughMoneyForOperationException when withdraw given a balance of lower than the amount")
+    @CsvSource({"30,60", "2,2", "60,80.30"})
+    void returnNotEnoughMoneyWhenWithdrawGivenBalanceLower(Double balance, Double amount){
+        when(repository.getBalance()).thenReturn(Optional.of(BigDecimal.valueOf(balance)));
+        assertThrows(NotEnoughMoneyForOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(amount));
+        });
+        verify(repository).getBalance();
+        verifyNoMoreInteractions(repository);
+    }
 
 
 }
