@@ -4,10 +4,12 @@ import com.carbon.bankaccount.account.Operation;
 import com.carbon.bankaccount.account.OperationRepository;
 import com.carbon.bankaccount.account.RepositoryBasedAccountService;
 import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
+import com.carbon.bankaccount.exceptions.NotEnoughMoneyForOperationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
@@ -58,7 +60,7 @@ public class AccountServiceTest {
     @ParameterizedTest
     @DisplayName("return no error when deposit given a correct amount")
     @ValueSource(doubles =  {2, 445.001, 5.00})
-    void createOperationWhenMakingADeposit(Double amount){
+    void returnNoErrorWhenMakeADeposit(Double amount){
         initClock();
         BigDecimal bgAmount = BigDecimal.valueOf(amount);
 
@@ -84,6 +86,58 @@ public class AccountServiceTest {
         verifyNoInteractions(repository);
     }
 
+    @ParameterizedTest
+    @DisplayName("return no error when withdraw given a correct amount and balance")
+    @ValueSource(doubles =  {2, 445.001, 5.00})
+    void returnNoErrorWhenWithdraw(Double amount){
+        initClock();
+        BigDecimal bgAmount = BigDecimal.valueOf(amount);
+
+        when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
+        when(repository.create(any())).thenReturn(sampleOperation);
+
+        assertDoesNotThrow(() -> this.service.withdraw(bgAmount));
+
+        InOrder order = inOrder(repository);
+        order.verify(repository).getBalance();
+        order.verify(repository).create(
+                new Operation(LocalDateTime.now(fixedClock), BigDecimal.ZERO.subtract(bgAmount),
+                        bgBalance.subtract(bgAmount).setScale(2, RoundingMode.HALF_EVEN)));
+        order.verifyNoMoreInteractions();
+    }
+
+    @Test
+    @DisplayName("return ErrorAmountOperationException when withdraw given an amount of 0")
+    void returnErrorWhenWithdraw0(){
+        assertThrows(ErrorAmountOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(0));
+        });
+        verifyNoInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @DisplayName("return NotEnoughMoneyForOperationException when withdraw given a balance of 0")
+    @ValueSource(doubles =  {2, 30.30, 70, 5})
+    void returnNotEnoughMoneyWhenWithdrawGivenBalanceOf0(Double amount){
+        when(repository.getBalance()).thenReturn(Optional.of(BigDecimal.ZERO));
+        assertThrows(NotEnoughMoneyForOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(amount));
+        });
+        verify(repository).getBalance();
+        verifyNoMoreInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @DisplayName("return NotEnoughMoneyForOperationException when withdraw given a balance of lower than the amount")
+    @CsvSource({"30,60", "2,2", "60,80.30"})
+    void returnNotEnoughMoneyWhenWithdrawGivenBalanceLower(Double balance, Double amount){
+        when(repository.getBalance()).thenReturn(Optional.of(BigDecimal.valueOf(balance)));
+        assertThrows(NotEnoughMoneyForOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(amount));
+        });
+        verify(repository).getBalance();
+        verifyNoMoreInteractions(repository);
+    }
 
 
 }
