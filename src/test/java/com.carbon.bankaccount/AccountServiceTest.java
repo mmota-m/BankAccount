@@ -58,7 +58,7 @@ public class AccountServiceTest {
     @ParameterizedTest
     @DisplayName("return no error when deposit given a correct amount")
     @ValueSource(doubles =  {2, 445.001, 5.00})
-    void createOperationWhenMakingADeposit(Double amount){
+    void returnNoErrorWhenMakeADeposit(Double amount){
         initClock();
         BigDecimal bgAmount = BigDecimal.valueOf(amount);
 
@@ -82,6 +82,26 @@ public class AccountServiceTest {
             this.service.makeADeposit(BigDecimal.valueOf(0));
         });
         verifyNoInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @DisplayName("create an operation when withdraw given an amount")
+    @ValueSource(doubles =  {2, 445.001, 5.00})
+    void createOperationWhenWithdraw(Double amount){
+        initClock();
+        BigDecimal bgAmount = BigDecimal.valueOf(amount);
+
+        when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
+        when(repository.create(any())).thenReturn(sampleOperation);
+
+        this.service.withdraw(bgAmount);
+
+        InOrder order = inOrder(repository);
+        order.verify(repository).getBalance();
+        order.verify(repository).create(
+                new Operation(LocalDateTime.now(fixedClock), BigDecimal.ZERO.subtract(bgAmount),
+                        bgBalance.subtract(bgAmount).setScale(2, RoundingMode.HALF_EVEN)));
+        order.verifyNoMoreInteractions();
     }
 
 

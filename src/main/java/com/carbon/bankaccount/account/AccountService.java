@@ -8,4 +8,6 @@ public interface AccountService {
 
     void makeADeposit(BigDecimal amount) throws ErrorAmountOperationException;
 
+    void withdraw(BigDecimal amount) throws ErrorAmountOperationException;
+
 }

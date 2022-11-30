@@ -30,6 +30,16 @@ public class RepositoryBasedAccountService implements AccountService {
         repository.create(operation);
     }
 
+    @Override
+    public void withdraw(BigDecimal amount) {
+        Optional<BigDecimal> balance = repository.getBalance();
+        BigDecimal actualBalanceValue = balance.orElse(BigDecimal.ZERO);
+        BigDecimal newBalance = actualBalanceValue.subtract(amount);
+        newBalance = newBalance.setScale(2, RoundingMode.HALF_EVEN);
+        Operation operation = new Operation(LocalDateTime.now(clock), BigDecimal.ZERO.subtract(amount), newBalance);
+        repository.create(operation);
+    }
+
     private boolean isAmountValid(BigDecimal amount) {
         return amount.compareTo(BigDecimal.ZERO) > 0;
     }
