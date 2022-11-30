@@ -1,4 +1,6 @@
-package com.carbon.bankaccount;
+package com.carbon.bankaccount.account;
+
+import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,12 +19,19 @@ public class RepositoryBasedAccountService implements AccountService {
     }
 
     @Override
-    public void makeADeposit(BigDecimal amount) {
+    public void makeADeposit(BigDecimal amount) throws ErrorAmountOperationException {
+        if(!isAmountValid(amount)){
+            throw new ErrorAmountOperationException();
+        }
         Optional<BigDecimal> balanceOptional = repository.getBalance();
         BigDecimal balance = balanceOptional.map(bigDecimal -> bigDecimal.add(amount)).orElse(amount);
         BigDecimal newBalance = balance.setScale(2, RoundingMode.HALF_EVEN);
         Operation operation = new Operation(LocalDateTime.now(clock), amount, newBalance);
         repository.create(operation);
+    }
+
+    private boolean isAmountValid(BigDecimal amount) {
+        return amount.compareTo(BigDecimal.ZERO) > 0;
     }
 
 }

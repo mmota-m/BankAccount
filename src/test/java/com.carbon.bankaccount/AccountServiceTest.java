@@ -1,6 +1,11 @@
 package com.carbon.bankaccount;
 
+import com.carbon.bankaccount.account.Operation;
+import com.carbon.bankaccount.account.OperationRepository;
+import com.carbon.bankaccount.account.RepositoryBasedAccountService;
+import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -17,6 +22,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -59,7 +66,7 @@ public class AccountServiceTest {
         when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
         when(repository.create(any())).thenReturn(sampleOperation);
 
-        this.service.makeADeposit(bgAmount);
+        assertDoesNotThrow(() -> this.service.makeADeposit(bgAmount));
 
         InOrder order = inOrder(repository);
         order.verify(repository).getBalance();
@@ -68,5 +75,16 @@ public class AccountServiceTest {
                         bgBalance.add(bgAmount).setScale(2, RoundingMode.HALF_EVEN)));
         order.verifyNoMoreInteractions();
     }
+
+    @Test
+    @DisplayName("return ErrorAmountOperationException when deposit given an amount of 0")
+    void returnErrorWhenMakeADepositOf0(){
+        assertThrows(ErrorAmountOperationException.class, () -> {
+            this.service.makeADeposit(BigDecimal.valueOf(0));
+        });
+        verifyNoInteractions(repository);
+    }
+
+
 
 }
