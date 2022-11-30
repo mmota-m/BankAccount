@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 
 public class OperationFormatter {
 
-    public String LIBELLE_AMOUNT = "Amount";
-    public String LIBELLE_DATE = "Date";
-    public String LIBELLE_BALANCE = "Balance";
-    public String LIBELLE_OPERATION = " " + LIBELLE_DATE + "\t\t\t| " + LIBELLE_AMOUNT + "\t| "+ LIBELLE_BALANCE + "\n";
-    public String LIBELLE_SOLDE = "Solde = ";
+    private String LIBELLE_AMOUNT = "Amount";
+    private String LIBELLE_DATE = "Date";
+    private String LIBELLE_BALANCE = "Balance";
+    private String LIBELLE_OPERATION = " " + LIBELLE_DATE + "\t\t\t| " + LIBELLE_AMOUNT + "\t| "+ LIBELLE_BALANCE + "\n";
+    private String LIBELLE_SOLDE = "Solde = ";
 
-    DecimalFormat balanceFormat = new DecimalFormat();
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private DecimalFormat balanceFormat = new DecimalFormat();
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public OperationFormatter(){
         balanceFormat.setMaximumFractionDigits(2);
