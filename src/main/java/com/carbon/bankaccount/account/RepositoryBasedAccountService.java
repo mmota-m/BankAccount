@@ -8,15 +8,19 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 public class RepositoryBasedAccountService implements AccountService {
 
    private final OperationRepository repository;
 
-    private final Clock clock;
+   private final OperationPrinter printer;
 
-    public RepositoryBasedAccountService(OperationRepository operationRepository, Clock clock) {
+   private final Clock clock;
+
+    public RepositoryBasedAccountService(OperationRepository operationRepository, OperationPrinter printer, Clock clock) {
         this.repository = operationRepository;
+        this.printer = printer;
         this.clock = clock;
     }
 
@@ -48,6 +52,12 @@ public class RepositoryBasedAccountService implements AccountService {
         BigDecimal newBalance = balance.setScale(2, RoundingMode.HALF_EVEN);
         Operation operation = new Operation(LocalDateTime.now(clock), amount, newBalance);
         repository.create(operation);
+    }
+    @Override
+    public void displayOperations() {
+        List<Operation> operations = repository.findAllSorted();
+        BigDecimal balance = repository.getBalance().orElse(BigDecimal.ZERO);
+        printer.printOperations(operations, balance);
     }
 
 }

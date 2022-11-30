@@ -1,6 +1,7 @@
 package com.carbon.bankaccount;
 
 import com.carbon.bankaccount.account.Operation;
+import com.carbon.bankaccount.account.OperationPrinter;
 import com.carbon.bankaccount.account.OperationRepository;
 import com.carbon.bankaccount.account.RepositoryBasedAccountService;
 import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
@@ -22,6 +23,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -34,6 +36,9 @@ import static org.mockito.Mockito.*;
 public class AccountServiceTest {
     @Mock
     private OperationRepository repository;
+
+    @Mock
+    private OperationPrinter printer;
 
     @Mock
     private Clock clock;
@@ -137,6 +142,19 @@ public class AccountServiceTest {
         });
         verify(repository).getBalance();
         verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("call the printer when asked to display operations")
+    void callPrinterWhenCheckOperationsOnAccount() {
+        when(repository.findAllSorted()).thenReturn(List.of());
+        when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
+        this.service.displayOperations();
+
+        InOrder order = inOrder(repository, printer);
+        order.verify(repository).findAllSorted();
+        order.verify(printer).printOperations(List.of(), bgBalance);
+        order.verifyNoMoreInteractions();
     }
 
 
