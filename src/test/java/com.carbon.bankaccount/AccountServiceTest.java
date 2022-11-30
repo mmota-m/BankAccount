@@ -1,6 +1,7 @@
 package com.carbon.bankaccount;
 
 import com.carbon.bankaccount.account.Operation;
+import com.carbon.bankaccount.account.OperationPrinter;
 import com.carbon.bankaccount.account.OperationRepository;
 import com.carbon.bankaccount.account.RepositoryBasedAccountService;
 import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
@@ -22,8 +23,11 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 
+import static com.carbon.bankaccount.OperationTestSample.bgBalance;
+import static com.carbon.bankaccount.OperationTestSample.sampleOperation;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,20 +40,14 @@ public class AccountServiceTest {
     private OperationRepository repository;
 
     @Mock
+    private OperationPrinter printer;
+
+    @Mock
     private Clock clock;
 
     @InjectMocks
     private RepositoryBasedAccountService service;
     private Clock fixedClock;
-
-    public static final Operation sampleOperation = new Operation(
-            LocalDateTime.now(),
-            BigDecimal.ZERO,
-            BigDecimal.ZERO
-    );
-
-    public static BigDecimal bgBalance = BigDecimal.valueOf(500);
-
 
     public void initClock() {
         fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
@@ -137,6 +135,19 @@ public class AccountServiceTest {
         });
         verify(repository).getBalance();
         verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("call the printer when asked to display operations")
+    void callPrinterWhenCheckOperationsOnAccount() {
+        when(repository.findAllSorted()).thenReturn(List.of());
+        when(repository.getBalance()).thenReturn(Optional.of(bgBalance));
+        this.service.displayOperations();
+
+        InOrder order = inOrder(repository, printer);
+        order.verify(repository).findAllSorted();
+        order.verify(printer).printOperations(List.of(), bgBalance);
+        order.verifyNoMoreInteractions();
     }
 
 
