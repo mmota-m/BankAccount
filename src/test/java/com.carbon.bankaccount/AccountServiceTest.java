@@ -46,7 +46,6 @@ public class AccountServiceTest {
             BigDecimal.ZERO
     );
 
-
     public static BigDecimal bgBalance = BigDecimal.valueOf(500);
 
 
@@ -57,7 +56,7 @@ public class AccountServiceTest {
     }
 
     @ParameterizedTest
-    @DisplayName("create a new operation when deposit")
+    @DisplayName("return no error when deposit given a correct amount")
     @ValueSource(doubles =  {2, 445.001, 5.00})
     void createOperationWhenMakingADeposit(Double amount){
         initClock();
