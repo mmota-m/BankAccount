@@ -4,10 +4,12 @@ import com.carbon.bankaccount.account.Operation;
 import com.carbon.bankaccount.account.OperationRepository;
 import com.carbon.bankaccount.account.RepositoryBasedAccountService;
 import com.carbon.bankaccount.exceptions.ErrorAmountOperationException;
+import com.carbon.bankaccount.exceptions.NotEnoughMoneyForOperationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
@@ -111,6 +113,18 @@ public class AccountServiceTest {
             this.service.withdraw(BigDecimal.valueOf(0));
         });
         verifyNoInteractions(repository);
+    }
+
+    @ParameterizedTest
+    @DisplayName("return NotEnoughMoneyForOperationException when withdraw given a balance of 0")
+    @ValueSource(doubles =  {2, 30.30, 70, 5})
+    void returnNotEnoughMoneyWhenWithdrawGivenBalanceOf0(Double amount){
+        when(repository.getBalance()).thenReturn(Optional.of(BigDecimal.ZERO));
+        assertThrows(NotEnoughMoneyForOperationException.class, () -> {
+            this.service.withdraw(BigDecimal.valueOf(amount));
+        });
+        verify(repository).getBalance();
+        verifyNoMoreInteractions(repository);
     }
 
 
