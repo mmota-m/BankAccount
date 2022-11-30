@@ -26,6 +26,8 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import static com.carbon.bankaccount.OperationTestSample.bgBalance;
+import static com.carbon.bankaccount.OperationTestSample.sampleOperation;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,15 +48,6 @@ public class AccountServiceTest {
     @InjectMocks
     private RepositoryBasedAccountService service;
     private Clock fixedClock;
-
-    public static final Operation sampleOperation = new Operation(
-            LocalDateTime.now(),
-            BigDecimal.ZERO,
-            BigDecimal.ZERO
-    );
-
-    public static BigDecimal bgBalance = BigDecimal.valueOf(500);
-
 
     public void initClock() {
         fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
