@@ -13,6 +13,12 @@ public class OperationTestSample {
             BigDecimal.ZERO
     );
 
+    public static final Operation sampleOperationWithdraw = new Operation(
+            LocalDateTime.now(),
+            BigDecimal.valueOf(-300),
+            BigDecimal.ZERO
+    );
+
     public static String strSolde = "Solde = ";
 
     public static BigDecimal bgBalance = BigDecimal.valueOf(500);
